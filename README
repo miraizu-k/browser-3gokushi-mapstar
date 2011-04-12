@@ -1,4 +1,7 @@
+ブラウザ三国志(3gokushi.jp)で使うuserscriptです
+map画面上でmapの★の数を数字にして表示します
+
 Chrome -> RAWからそのままインストール可能
 fireofx -> grasemonkey拡張インストール後にrawをクリックでインストール可能
 
-バグ報告はブログで・・・
+バグ報告はブログもしくはgithubのissues・課題で・・・
