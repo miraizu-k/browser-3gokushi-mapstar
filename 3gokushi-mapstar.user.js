@@ -126,6 +126,191 @@ function onSettingClick(e) {
 }
 
 /**
+ * 設定エディタ
+ */
+
+GM_addStyle([
+        ".mapStar_editor {",
+            "border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;",
+            "background-color: white; position:absolute; padding:5px; z-index: 500;",
+            "vertical",
+        "}",
+        ".mapStar_editor li{",
+            "margin:3px;",
+        "}",
+        ".mapStar_editor li div{",
+            "position:static;",
+            "margin-left:10px;",
+            "float:left;",
+            "width:10px;height:10px;",
+        "}",
+        ].join("\n"));
+
+var editorBox = createElement("div", {
+    attribute : {
+        'class' : 'mapStar_editor'
+    },
+    css : {
+        display : 'none'
+    }
+});
+var ul = createElement('ul');
+var li = createElement('li');
+var label = createElement('label');
+
+var editorCache = { caption : null,bgColor:null,lowLevelText:null,middleLevelText:null,highLevelText:null,lowLevel:null,middleLevel:null,highLevel:null};
+
+// 色選択する所
+var colorSelect = li.cloneNode(true);
+var colorSelectLabel = label.cloneNode(true);
+colorSelectLabel.appendChild(createText('変更する色選択\u00A0：\u00A0'));
+var colorSelectSelectNode = createElement('select');
+colorSelectLabel.appendChild(colorSelectSelectNode);
+colorSelect.appendChild(colorSelectLabel);
+ul.appendChild(colorSelect);
+
+// 簡易説明の所
+var caption = li.cloneNode(true);
+var captionLabel = label.cloneNode(true);
+captionLabel.appendChild(createText('簡易説明\u00A0：\u00A0'));
+editorCache.caption = createElement('input', {
+                            attribute : {
+                                'type' : 'text',
+                                'maxlength' : '10',
+                                'size' : '11',
+                                'name' : 'title'
+                            }
+                        });
+captionLabel.appendChild(editorCache.caption);
+caption.appendChild(captionLabel);
+ul.appendChild(caption);
+
+// 背景色の所
+var bgColor = li.cloneNode(true);
+var bgColorLabel = label.cloneNode(true);
+bgColorLabel.style.setProperty('float','left');
+bgColorLabel.appendChild(createText('背景色\u00A0：\u00A0#'));
+editorCache.bgColor = createElement('input', {
+                            attribute : {
+                                'type' : 'text',
+                                'maxlength' : '6',
+                                'size' : '7',
+                                'name' : 'bgColor'
+                            }
+                        });
+bgColorLabel.appendChild(editorCache.bgColor);
+bgColor.appendChild(bgColorLabel);
+ul.appendChild(bgColor);
+
+// レベル関係の所
+var levelDatas = {
+                    low:{
+                        caption:'最低Lv\u00A0：\u00A0',
+                        className:'mapStar_box mapStar_on'
+                    },
+                    middle:{
+                        caption:'中Lv\u00A0：\u00A0',
+                        className:'mapStar_box mapStar_on mapStar_box_sol'
+                    },
+                    high:{
+                        caption:'高Lv\u00A0：\u00A0',
+                        className:'mapStar_box mapStar_on mapStar_box_sol mapStar_box_bol'
+                    }
+                };
+for (var level in levelDatas)(function(level,levelData){
+    var levelLi = li.cloneNode(true);
+    levelLi.style.setProperty('float','left');
+    if (level == 'low') {
+        levelLi.style.setProperty('clear','both');
+    }
+    var levelLabel = label.cloneNode(true);
+    levelLabel.appendChild(createText(levelData.caption));
+    editorCache[level+'Level'] = createElement('input', {
+                                        attribute : {
+                                            'type' : 'text',
+                                            'maxlength' : '1',
+                                            'size' : '1',
+                                            'name' : 'low'
+                                        }
+                                    });
+    levelLabel.appendChild(editorCache[level+'Level']);
+    levelLi.appendChild(levelLabel);
+    ul.appendChild(levelLi);
+
+    editorCache[level+'LevelText'] = createElement('div', {attribute : {'class' : levelData.className}});
+    bgColor.appendChild(editorCache[level+'LevelText']);
+})(level,levelDatas[level]);
+
+// 各種ボタン
+var buttons = li.cloneNode(true);
+buttons.style.setProperty('clear','both');
+buttons.style.setProperty('padding-top','3px');
+buttons.appendChild(createElement('input',{
+                                    attribute : {
+                                        'type' : 'submit',
+                                        'value' : '保存'
+                                    }
+                                }));
+buttons.appendChild(createText('\u00A0'));
+buttons.appendChild(createElement('input',{
+                                    attribute : {
+                                        'type' : 'button',
+                                        'value' : 'キャンセル'
+                                    },
+                                    events : {
+                                        click : function (e) {
+                                            editorBox.style.display = 'none';
+                                        }
+                                    }
+                                }));
+buttons.appendChild(createText('\u00A0'));
+buttons.appendChild(createElement('input',{
+                                    attribute : {
+                                        'type' : 'button',
+                                        'value' : '削除'
+                                    },
+                                    css : {
+                                        display : 'none'
+                                    },
+                                    events : {
+                                        click : function (e) {
+                                            alert("削除!");
+                                            editorBox.style.display = 'none';
+                                        }
+                                    }
+                                }));
+ul.appendChild(buttons);
+
+var form = createElement('form',{
+                                    events : {
+                                        submit : function(e) {
+                                            alert('ほぞんー');
+                                            editorBox.style.display = 'none';
+                                            e.preventDefault();
+                                        }
+                                    }
+                                });
+form.appendChild(ul);
+editorBox.appendChild(form);
+
+
+mapStarBox.appendChild(editorBox);
+var setEditor = function(e) {
+    editorBox.style.display = "block";
+    editorBox.style.top = e.target.parentNode.offsetTop
+            - editorBox.offsetHeight - 3 + "px";
+    editorBox.style.left = e.target.parentNode.offsetLeft + 3 + "px";
+    var key = this.getAttribute("type");
+
+    if (key) {
+        GM_log(key);
+    }
+
+    e.preventDefault();
+    return false;
+};
+
+/**
  * 設定ボックスの挿入
  */
 var settingBox = createElement('div',{
@@ -166,7 +351,22 @@ for ( var key in dataTable) {
     css.push('.mapStar_' + key + '_ {background-color:' + setting.bgColor
             + '; color:' + getFontColor(setting.bgColor) + '} ');
 
+
+    // editor option
+    colorSelectSelectNode.appendChild(createElement('option',{
+        attribute : {
+            'value' : key
+        },
+        innerText : setting.title
+    }));
 }
+
+var edit = document.createElement("A");
+edit.href = "javascript:void(0);";
+$e(edit, "click", setEditor);
+edit.appendChild(document.createTextNode("編集"));
+edit.style.color = "#000000";
+settingBox.appendChild(edit);
 
 /**
  * MAPサイズ取得
