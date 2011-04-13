@@ -3,7 +3,7 @@
 // @namespace      3gokushi
 // @description    ブラウザ三国志のマップに★の数を表示します。
 // @include        http://*.3gokushi.jp/map.php*
-// @version        1.1.2
+// @version        1.1.3
 // ==/UserScript==
 initGMFunctions();
 var $x = function (xpath, context){var nodes = [];try {var doc = context || document;var results = doc.evaluate(xpath, doc, null, XPathResult.ANY_TYPE, null);var node;while (node = results.iterateNext()) {nodes.push(node);}} catch (e) {throw new Error(e.message);}return nodes;};
@@ -186,12 +186,17 @@ for (var i = 0;i <= mapSize;i++) {
     mapMap[i] = null;
 }
 
-var imgRegCmp = new RegExp(/img\/panel\/[^_]*_([^_]*)_/);
+var imgRegCmp = new RegExp(/img\/panel\/([^_]*)_([^_]*)_/);
 $x('id("mapsAll")//img[contains(@class,"mapAll") and not(@class="mapAllOverlay")]').forEach(function(self){
     var matches =self.className.match(/mapAll(\d+)/);
     var mapIndex = matches[1] - 0;
     if ((matches = imgRegCmp.exec(self.src))) {
-        mapMap[mapIndex] = matches[1];
+        if (matches[1] == 'resource') {
+            mapMap[mapIndex] = null;
+        }
+        else {
+            mapMap[mapIndex] = matches[2];
+        }
     } else if (0 <= self.src.indexOf("blanc")) {
         mapMap[mapIndex] = false;
     }
@@ -235,6 +240,7 @@ for (var i = 1,j=0; i < mapMap.length; i++) {
         setting  = dataTable[dataKey];
 
         var item = document.createElement('div');
+
         if (setting.isVisible == false) {
             item.style.display = "none";
         }
