@@ -3,7 +3,7 @@
 // @namespace      3gokushi
 // @description    ブラウザ三国志のマップに★の数を表示します。
 // @include        http://*.3gokushi.jp/map.php*
-// @version        1.1.3.5
+// @version        1.2.0
 // ==/UserScript==
 (function() {
 var crossBrowserUtility = initCrossBrowserSupport();
@@ -131,23 +131,24 @@ function onSettingClick(e) {
  */
 
 GM_addStyle([
-        ".mapStar_editor {",
-            "border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;",
-            "background-color: white; position:absolute; padding:5px; z-index: 500;",
-            "vertical",
-        "}",
-        ".mapStar_editor li{",
-            "margin:3px;",
-        "}",
-        ".mapStar_editor li div{",
-            "position:static;",
-            "margin-left:10px;",
-            "float:left;",
-            "width:10px;height:10px;",
-        "}",
+        '.mapStar_editor {',
+            'border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;',
+            'background-color: white; position:absolute; padding:5px; z-index: 500;',
+            'vertical',
+        '}',
+        '.mapStar_editor li{',
+            'margin:3px;',
+        '}',
+        '.mapStar_editor li div{',
+            'position:static;',
+            'margin-left:10px;',
+            'float:left;',
+            'width:10px;height:10px;' ,
+            'font-size: 8px;',
+        '}',
         ].join("\n"));
 
-var editorBox = createElement("div", {
+var editorBox = createElement('div', {
     attribute : {
         'class' : 'mapStar_editor'
     },
@@ -165,7 +166,26 @@ var editorCache = { caption : null,bgColor:null,lowLevelText:null,middleLevelTex
 var colorSelect = li.cloneNode(true);
 var colorSelectLabel = label.cloneNode(true);
 colorSelectLabel.appendChild(createText('変更する色選択\u00A0：\u00A0'));
-var colorSelectSelectNode = createElement('select');
+var colorSelectSelectNode = createElement('select',{
+                                                        events : {
+                                                            change : function(e) {
+                                                                var dataKey = e.target.value;
+                                                                var setting = dataTable[dataKey];
+                                                                editorCache.caption.value = setting.title;
+                                                                editorCache.bgColor.value = setting.bgColor.substring(1);
+
+                                                                editorCache.lowLevelText.innerHTML = setting.low;
+                                                                editorCache.lowLevelText.className = 'mapStar_on mapStar_' + dataKey + '_ mapStar_padding';
+                                                                editorCache.middleLevelText.innerHTML = setting.middle;
+                                                                editorCache.middleLevelText.className = 'mapStar_on mapStar_' + dataKey + '_ mapStar_box_sol';
+                                                                editorCache.highLevelText.innerHTML = setting.high;
+                                                                editorCache.highLevelText.className = 'mapStar_on mapStar_' + dataKey + '_ mapStar_box_sol mapStar_box_bol';
+                                                                editorCache.lowLevel.value = setting.low;
+                                                                editorCache.middleLevel.value = setting.middle;
+                                                                editorCache.highLevel.value = setting.high;
+                                                            }
+                                                        }
+                                                    });
 colorSelectLabel.appendChild(colorSelectSelectNode);
 colorSelect.appendChild(colorSelectLabel);
 ul.appendChild(colorSelect);
@@ -206,16 +226,13 @@ ul.appendChild(bgColor);
 // レベル関係の所
 var levelDatas = {
                     low:{
-                        caption:'最低Lv\u00A0：\u00A0',
-                        className:'mapStar_box mapStar_on'
+                        caption:'最低Lv\u00A0：\u00A0'
                     },
                     middle:{
-                        caption:'中Lv\u00A0：\u00A0',
-                        className:'mapStar_box mapStar_on mapStar_box_sol'
+                        caption:'中Lv\u00A0：\u00A0'
                     },
                     high:{
-                        caption:'高Lv\u00A0：\u00A0',
-                        className:'mapStar_box mapStar_on mapStar_box_sol mapStar_box_bol'
+                        caption:'高Lv\u00A0：\u00A0'
                     }
                 };
 for (var level in levelDatas)(function(level,levelData){
@@ -275,7 +292,7 @@ buttons.appendChild(createElement('input',{
                                     },
                                     events : {
                                         click : function (e) {
-                                            alert("削除!");
+                                            alert('削除!');
                                             editorBox.style.display = 'none';
                                         }
                                     }
@@ -297,11 +314,11 @@ editorBox.appendChild(form);
 
 mapStarBox.appendChild(editorBox);
 var setEditor = function(e) {
-    editorBox.style.display = "block";
+    editorBox.style.display = 'block';
     editorBox.style.top = e.target.parentNode.offsetTop
-            - editorBox.offsetHeight - 3 + "px";
-    editorBox.style.left = e.target.parentNode.offsetLeft + 3 + "px";
-    var key = this.getAttribute("type");
+            - editorBox.offsetHeight - 3 + 'px';
+    editorBox.style.left = e.target.parentNode.offsetLeft + 3 + 'px';
+    var key = this.getAttribute('type');
 
     if (key) {
         GM_log(key);
@@ -361,12 +378,17 @@ for ( var key in dataTable) {
         innerText : setting.title
     }));
 }
+// default select dispatch
+var e = document.createEvent('HTMLEvents');
+e.initEvent('change', true, true);
+colorSelectSelectNode.selectedIndex = 0;
+colorSelectSelectNode.dispatchEvent(e);
 
-var edit = document.createElement("A");
-edit.href = "javascript:void(0);";
-$e(edit, "click", setEditor);
-edit.appendChild(document.createTextNode("編集"));
-edit.style.color = "#000000";
+var edit = document.createElement('A');
+edit.href = 'javascript:void(0);';
+$e(edit, 'click', setEditor);
+edit.appendChild(document.createTextNode('編集'));
+edit.style.color = '#000000';
 settingBox.appendChild(edit);
 
 /**
