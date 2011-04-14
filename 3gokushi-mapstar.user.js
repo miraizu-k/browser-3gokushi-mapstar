@@ -511,7 +511,7 @@ function createElement(elementName, option, doc) {
         if (typeof option.css == 'object') {
             var cssString = '';
             for ( var cssProp in option.css) {
-                retElement.style.setProperty(cssProp, option.css[cssProp]);
+                retElement.style.setProperty(cssProp, option.css[cssProp],'');
             }
         } else if (option.css == 'string') {
             retElement.style.cssText = option.css;
