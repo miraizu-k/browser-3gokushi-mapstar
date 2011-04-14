@@ -3,7 +3,7 @@
 // @namespace      3gokushi
 // @description    ブラウザ三国志のマップに★の数を表示します。
 // @include        http://*.3gokushi.jp/map.php*
-// @version        1.1.3.1
+// @version        1.2.0
 // ==/UserScript==
 initGMFunctions();
 var $x = function(xpath, context) {var nodes = [];try {var doc = context || document;var results = doc.evaluate(xpath, doc, null, XPathResult.ANY_TYPE, null);var node;while (node = results.iterateNext()) {nodes.push(node);}} catch (e) {throw new Error(e.message);}return nodes;};
@@ -25,73 +25,73 @@ var dataTable;
 if ((dataTable = GM_getValue('b3MapStar_dataTable', null)) == null) {
     dataTable = {
         w : { // white
-            bgColor : "#FFFFFF",
+            bgColor : '#FFFFFF',
             isVisible : true,
-            title : "空地",
+            title : '空地',
             low : 1,
             middle : 3,
             high : 5
         },
         b : { // blue
-            bgColor : "#0000FF",
+            bgColor : '#0000FF',
             isVisible : true,
-            title : "自軍",
+            title : '自軍',
             low : 1,
             middle : 3,
             high : 5
         },
         g : { // green
-            bgColor : "#00FF00",
+            bgColor : '#00FF00',
             isVisible : true,
-            title : "同盟員",
+            title : '同盟員',
             low : 1,
             middle : 3,
             high : 5
         },
         bk : { // black
-            bgColor : "#000000",
+            bgColor : '#000000',
             isVisible : true,
-            title : "自配下",
+            title : '自配下',
             low : 1,
             middle : 3,
             high : 5
         },
         bg : { // sky blue
-            bgColor : "#0066FF",
+            bgColor : '#0066FF',
             isVisible : true,
-            title : "親同盟",
+            title : '親同盟',
             low : 1,
             middle : 3,
             high : 5
         },
         y : { // yellow
-            bgColor : "#FFFF00",
+            bgColor : '#FFFF00',
             isVisible : true,
-            title : "不可侵",
+            title : '不可侵',
             low : 1,
             middle : 3,
             high : 5
         },
         r : { // red
-            bgColor : "#FF0000",
+            bgColor : '#FF0000',
             isVisible : true,
-            title : "敵対",
+            title : '敵対',
             low : 1,
             middle : 3,
             high : 5
         },
         o : { // orange
-            bgColor : "#FFA500",
+            bgColor : '#FFA500',
             isVisible : true,
-            title : "他配下",
+            title : '他配下',
             low : 1,
             middle : 3,
             high : 5
         },
         p : { // purple
-            bgColor : "#FF00FF",
+            bgColor : '#FF00FF',
             isVisible : true,
-            title : "NPC",
+            title : 'NPC',
             low : 1,
             middle : 3,
             high : 5
@@ -105,16 +105,16 @@ if ((dataTable = GM_getValue('b3MapStar_dataTable', null)) == null) {
  * 設定on/off処理関数
  */
 function onSettingClick(e) {
-    var key = this.getAttribute("type");
+    var key = this.getAttribute('type');
     dataTable[key].isVisible = !dataTable[key].isVisible;
     GM_setValue('b3MapStar_dataTable', myJSON.stringify(dataTable));
 
-    var clsName = "mapStar_off";
-    var displayVal = "none";
+    var clsName = 'mapStar_off';
+    var displayVal = 'none';
 
     if (dataTable[key].isVisible) {
-        clsName = "mapStar_on";
-        displayVal = "block";
+        clsName = 'mapStar_on';
+        displayVal = 'block';
     }
 
     $x('id("mapStarItemWrapper")//div[contains(@class,"mapStar_' + key + '_")]')
@@ -122,7 +122,7 @@ function onSettingClick(e) {
             self.style.display = displayVal;
         });
 
-    this.className = "mapStar_outer " + clsName;
+    this.className = 'mapStar_' + key + '_ mapStar_outer ' + clsName;
 }
 
 /**
@@ -130,23 +130,24 @@ function onSettingClick(e) {
  */
 
 GM_addStyle([
-        ".mapStar_editor {",
-            "border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;",
-            "background-color: white; position:absolute; padding:5px; z-index: 500;",
-            "vertical",
-        "}",
-        ".mapStar_editor li{",
-            "margin:3px;",
-        "}",
-        ".mapStar_editor li div{",
-            "position:static;",
-            "margin-left:10px;",
-            "float:left;",
-            "width:10px;height:10px;",
-        "}",
+        '.mapStar_editor {',
+            'border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;',
+            'background-color: white; position:absolute; padding:5px; z-index: 500;',
+            'vertical',
+        '}',
+        '.mapStar_editor li{',
+            'margin:3px;',
+        '}',
+        '.mapStar_editor li div{',
+            'position:static;',
+            'margin-left:10px;',
+            'float:left;',
+            'width:10px;height:10px;' ,
+            'font-size: 8px;',
+        '}',
         ].join("\n"));
 
-var editorBox = createElement("div", {
+var editorBox = createElement('div', {
     attribute : {
         'class' : 'mapStar_editor'
     },
@@ -164,7 +165,26 @@ var editorCache = { caption : null,bgColor:null,lowLevelText:null,middleLevelTex
 var colorSelect = li.cloneNode(true);
 var colorSelectLabel = label.cloneNode(true);
 colorSelectLabel.appendChild(createText('変更する色選択\u00A0：\u00A0'));
-var colorSelectSelectNode = createElement('select');
+var colorSelectSelectNode = createElement('select',{
+                                                        events : {
+                                                            change : function(e) {
+                                                                var dataKey = e.target.value;
+                                                                var setting = dataTable[dataKey];
+                                                                editorCache.caption.value = setting.title;
+                                                                editorCache.bgColor.value = setting.bgColor.substring(1);
+
+                                                                editorCache.lowLevelText.innerHTML = setting.low;
+                                                                editorCache.lowLevelText.className = 'mapStar_on mapStar_' + dataKey + '_ mapStar_padding';
+                                                                editorCache.middleLevelText.innerHTML = setting.middle;
+                                                                editorCache.middleLevelText.className = 'mapStar_on mapStar_' + dataKey + '_ mapStar_box_sol';
+                                                                editorCache.highLevelText.innerHTML = setting.high;
+                                                                editorCache.highLevelText.className = 'mapStar_on mapStar_' + dataKey + '_ mapStar_box_sol mapStar_box_bol';
+                                                                editorCache.lowLevel.value = setting.low;
+                                                                editorCache.middleLevel.value = setting.middle;
+                                                                editorCache.highLevel.value = setting.high;
+                                                            }
+                                                        }
+                                                    });
 colorSelectLabel.appendChild(colorSelectSelectNode);
 colorSelect.appendChild(colorSelectLabel);
 ul.appendChild(colorSelect);
@@ -205,16 +225,13 @@ ul.appendChild(bgColor);
 // レベル関係の所
 var levelDatas = {
                     low:{
-                        caption:'最低Lv\u00A0：\u00A0',
-                        className:'mapStar_box mapStar_on'
+                        caption:'最低Lv\u00A0：\u00A0'
                     },
                     middle:{
-                        caption:'中Lv\u00A0：\u00A0',
-                        className:'mapStar_box mapStar_on mapStar_box_sol'
+                        caption:'中Lv\u00A0：\u00A0'
                     },
                     high:{
-                        caption:'高Lv\u00A0：\u00A0',
-                        className:'mapStar_box mapStar_on mapStar_box_sol mapStar_box_bol'
+                        caption:'高Lv\u00A0：\u00A0'
                     }
                 };
 for (var level in levelDatas)(function(level,levelData){
@@ -274,7 +291,7 @@ buttons.appendChild(createElement('input',{
                                     },
                                     events : {
                                         click : function (e) {
-                                            alert("削除!");
+                                            alert('削除!');
                                             editorBox.style.display = 'none';
                                         }
                                     }
@@ -296,11 +313,11 @@ editorBox.appendChild(form);
 
 mapStarBox.appendChild(editorBox);
 var setEditor = function(e) {
-    editorBox.style.display = "block";
+    editorBox.style.display = 'block';
     editorBox.style.top = e.target.parentNode.offsetTop
-            - editorBox.offsetHeight - 3 + "px";
-    editorBox.style.left = e.target.parentNode.offsetLeft + 3 + "px";
-    var key = this.getAttribute("type");
+            - editorBox.offsetHeight - 3 + 'px';
+    editorBox.style.left = e.target.parentNode.offsetLeft + 3 + 'px';
+    var key = this.getAttribute('type');
 
     if (key) {
         GM_log(key);
@@ -313,51 +330,64 @@ var setEditor = function(e) {
 /**
  * 設定ボックスの挿入
  */
-var settingBox = document.createElement("div");
-settingBox.style.backgroundColor = "#FFFFFF";
+var settingBox = createElement('div',{
+                                        css : {
+                                            'background-color' : '#FFFFFF',
+                                            'padding-left' : '5px'
+                                        }
+                                    });
+
 mapStarBox.appendChild(settingBox);
 
 var css = [
-        ".mapStar_outer{ width:10px;height:10px;margin:2px 4px 2px 0px;float:left;border:1px solid #000000;cursor:pointer; }",
-        ".mapStar_on{ filter:alpha(opacity=100);opacity:1; }",
-        ".mapStar_off{ filter:alpha(opacity=30);opacity:0.3;border:1px solid #999999; }",
-        ".mapStar_box{ filter:alpha(opacity=60);opacity:0.6; position: absolute; width: 8px; height: 8px; padding: 0px 0px 2px 3px; font-size: 8px;}",
-        ".mapStar_box_sol { border:1px solid #000;}",
-        ".mapStar_box_bol { font-weight:bold; }", ];
+        '.mapStar_outer{ width:10px;height:10px;margin:2px 4px 2px 0px;float:left;border:1px solid #000000;cursor:pointer; }',
+        '.mapStar_on{ filter:alpha(opacity=100);opacity:1; }',
+        '.mapStar_off{ filter:alpha(opacity=30);opacity:0.3;border:1px solid #999999; }',
+        '.mapStar_box{ filter:alpha(opacity=60);opacity:0.6; position: absolute; width: 8px; height: 8px; font-size: 8px;}',
+        '.mapStar_box_sol { border:1px solid #000;padding : 0px 2px 3px 2px;}',
+        '.mapStar_box_bol { font-weight:bold; }',
+        '.mapStar_padding { padding : 1px 2px 4px 3px; }',
+        ];
 
 for ( var key in dataTable) {
     var setting = dataTable[key];
-    var onoff = setting.isVisible ? "mapStar_on" : "mapStar_off";
+    var onoff = setting.isVisible ? 'mapStar_on' : 'mapStar_off';
     var setItem = document.createElement('div');
-    setItem.className = "mapStar_outer " + onoff;
+    setItem.className = 'mapStar_' + key + '_ mapStar_outer ' + onoff;
     setItem.style.backgroundColor = setting.bgColor;
 
     setItem.title = setting.title;
 
     settingBox.appendChild(setItem);
-    setItem.setAttribute("type", key);
+    setItem.setAttribute('type', key);
 
     $e(setItem, {
         click : onSettingClick
     });
 
-    css.push(".mapStar_" + key + "_ {background-color:" + setting.bgColor
-            + "; color:" + getFontColor(setting.bgColor) + "} ");
+    css.push('.mapStar_' + key + '_ {background-color:' + setting.bgColor
+            + '; color:' + getFontColor(setting.bgColor) + '} ');
 
     // editor option
     colorSelectSelectNode.appendChild(createElement('option',{
         attribute : {
-            'value' : key
+            'value' : key,
+            'class' : 'mapStar_' + key + '_'
         },
         innerText : setting.title
     }));
 }
+// default select dispatch
+var e = document.createEvent('HTMLEvents');
+e.initEvent('change', true, true);
+colorSelectSelectNode.selectedIndex = 0;
+colorSelectSelectNode.dispatchEvent(e);
 
-var edit = document.createElement("A");
-edit.href = "javascript:void(0);";
-$e(edit, "click", setEditor);
-edit.appendChild(document.createTextNode("編集"));
-edit.style.color = "#000000";
+var edit = document.createElement('A');
+edit.href = 'javascript:void(0);';
+$e(edit, 'click', setEditor);
+edit.appendChild(document.createTextNode('編集'));
+edit.style.color = '#000000';
 settingBox.appendChild(edit);
 
 /**
@@ -369,21 +399,21 @@ var mapSize = ($('rollover').style.zIndex || document.defaultView
 /**
  * CSS設定
  */
-var marginSize = "32px 0px 0px 23px";
+var marginSize = '34px 0px 0px 23px';
 if (400 <= mapSize) {
-    marginSize = "16px 0px 0px 12px";
+    marginSize = '18px 0px 0px 12px';
 } else if (200 <= mapSize) {
-    marginSize = "25px 0px 0px 17px";
+    marginSize = '25px 0px 0px 17px';
 }
-css.push(".mapStar_margin{ margin:" + marginSize + "; z-index:" + (mapSize + 2)
-        + "; }");
+css.push('.mapStar_margin{ margin:' + marginSize + '; z-index:' + (mapSize + 2)
+        + '; }');
 GM_addStyle(css.join("\n"));
 
 /**
  * 地図データの取得
  */
 var mapMap = new Array(mapSize + 1);
-var maps = $("mapsAll");
+var maps = $('mapsAll');
 
 for ( var i = 0; i <= mapSize; i++) {
     mapMap[i] = null;
@@ -400,7 +430,7 @@ $x('id("mapsAll")//img[contains(@class,"mapAll") and not(@class="mapAllOverlay")
                 } else {
                     mapMap[mapIndex] = matches[2];
                 }
-            } else if (0 <= self.src.indexOf("blanc")) {
+            } else if (0 <= self.src.indexOf('blanc')) {
                 mapMap[mapIndex] = false;
             }
         });
@@ -409,14 +439,17 @@ $x('id("mapsAll")//img[contains(@class,"mapAll") and not(@class="mapAllOverlay")
  * 地図へ埋め込み
  *
  */
-var itemWrapper = document.createElement("div");
-itemWrapper.setAttribute("id", "mapStarItemWrapper");
+var itemWrapper = document.createElement('div');
+itemWrapper.setAttribute('id', 'mapStarItemWrapper');
 mapStarBox.appendChild(itemWrapper);
 
-itemWrapper.style.position = "absolute";
+itemWrapper.style.position = 'absolute';
 setTimeout(function() {
-    itemWrapper.style.top = (maps.offsetParent.offsetTop + maps.offsetTop)+ "px";
-    itemWrapper.style.left = (maps.offsetParent.offsetLeft + maps.offsetLeft)+ "px";
+    itemWrapper.style.top = (maps.offsetParent.offsetTop + maps.offsetTop)+ 'px';
+    itemWrapper.style.left = (maps.offsetParent.offsetLeft + maps.offsetLeft)+ 'px';
+
+    var f = arguments.callee;
+    setTimeout(function() { f();},1000);
 }, 300);
 
 var areas = $x('id("mapsAll")//area');
@@ -437,17 +470,17 @@ for ( var i = 1, j = 0; i < mapMap.length; i++) {
     var matches = null;
 
     if ((matches = regCmp.exec(mo))) {
-        var dataKey = (mapMap[i] === null) ? "w" : mapMap[i];
+        var dataKey = (mapMap[i] === null) ? 'w' : mapMap[i];
         setting = dataTable[dataKey];
 
         var item = document.createElement('div');
 
         if (setting.isVisible == false) {
-            item.style.display = "none";
+            item.style.display = 'none';
         }
 
-        item.className = "mapStar_margin mapStar_box mapStar_" + dataKey + "_";
-        item.setAttribute("id", "mapStar_" + i);
+        item.className = 'mapStar_margin mapStar_box mapStar_' + dataKey + '_';
+        item.setAttribute('id', 'mapStar_' + i);
         item.style.left = matches[3];
         item.style.top = matches[4];
         item.innerHTML = matches[2].length;
@@ -455,11 +488,14 @@ for ( var i = 1, j = 0; i < mapMap.length; i++) {
         if (matches[2].length < setting.low) {
             continue;
         }
+        if (matches[2].length < setting.middle) {
+            item.className += ' mapStar_padding';
+        }
         if (setting.middle <= matches[2].length) {
-            item.className += " mapStar_box_sol";
+            item.className += ' mapStar_box_sol';
         }
         if (setting.high <= matches[2].length) {
-            item.className += " mapStar_box_bol";
+            item.className += ' mapStar_box_bol';
         }
 
         itemWrapper.appendChild(item);
@@ -467,7 +503,7 @@ for ( var i = 1, j = 0; i < mapMap.length; i++) {
 }
 
 function getFontColor(colStr) {
-    if (colStr[0] == "#") {
+    if (colStr[0] == '#') {
         colStr = colStr.substring(1);
     }
     var r = parseInt(colStr[0], 16);
@@ -487,12 +523,12 @@ function getFontColor(colStr) {
     var bLightness = getLightness(0, 0, 0);
     var wLightness = getLightness(255, 255, 255);
 
-    var fontColer = "FFF";
+    var fontColer = 'FFF';
     if (Math.abs(wLightness - bgLightness) < Math.abs(bLightness - bgLightness)) {
-        fontColer = "000";
+        fontColer = '000';
     }
 
-    return "#" + fontColer;
+    return '#' + fontColer;
 }
 
 function initGMFunctions() {
@@ -656,7 +692,7 @@ function initJSON() {
 
         if (typeof JSON != 'object') {
             myJSON.prototype.parse = function(jsonStrings) {
-                return eval("(" + jsonStrings + ")");
+                return eval('(' + jsonStrings + ')');
             };
         }
     }
