@@ -12,9 +12,10 @@ var $e = function(doc,event,func) {var eventList = event;if (typeof event == 'st
 
 var myJSON = initJSON();
 
-var mapStarBox = document.createElement('div');
-mapStarBox.setAttribute("id","mapStarBox");
-$x('id("mapboxInner")').forEach(function(self){self.appendChild(mapStarBox);});
+var mapStarBox = createElement('div', {'attribute' : {'id' : 'mapStarBox'}});
+$x('id("mapboxInner")').forEach(function(self) {
+                                    self.appendChild(mapStarBox);
+                                });
 
 /**
  * 設定データ初期化
@@ -24,80 +25,79 @@ var dataTable;
 if ((dataTable = GM_getValue('b3MapStar_dataTable',null)) == null) {
     dataTable = {
         w : { // white
-            bgColor: "#FFFFFF",
+            bgColor : '#FFFFFF',
             isVisible: true,
-            title: "空地",
+            title : '空地',
             low:1,
             middle:3,
             high:5
         },
         b : {   // blue
-            bgColor: "#0000FF",
+            bgColor : '#0000FF',
             isVisible: true,
-            title: "自軍",
+            title : '自軍',
             low:1,
             middle:3,
             high:5
         },
         g : { // green
-            bgColor: "#00FF00",
+            bgColor : '#00FF00',
             isVisible: true,
-            title: "同盟員",
+            title : '同盟員',
             low:1,
             middle:3,
             high:5
         },
         bk : { // black
-            bgColor: "#000000",
+            bgColor : '#000000',
             isVisible: true,
-            title: "自配下",
+            title : '自配下',
             low:1,
             middle:3,
             high:5
         },
         bg : { // sky blue
-            bgColor: "#0066FF",
+            bgColor : '#0066FF',
             isVisible: true,
-            title: "親同盟",
+            title : '親同盟',
             low:1,
             middle:3,
             high:5
         },
         y : { // yellow
-            bgColor: "#FFFF00",
+            bgColor : '#FFFF00',
             isVisible: true,
-            title: "不可侵",
+            title : '不可侵',
             low:1,
             middle:3,
             high:5
         },
         r : { // red
-            bgColor: "#FF0000",
+            bgColor : '#FF0000',
             isVisible: true,
-            title: "敵対",
+            title : '敵対',
             low:1,
             middle:3,
             high:5
         },
         o : { // orange
-            bgColor: "#FFA500",
+            bgColor : '#FFA500',
             isVisible: true,
-            title: "他配下",
+            title : '他配下',
             low:1,
             middle:3,
             high:5
         },
         p : { // purple
-            bgColor: "#FF00FF",
+            bgColor : '#FF00FF',
             isVisible: true,
-            title: "NPC",
+            title : 'NPC',
             low:1,
             middle:3,
             high:5
         }
     };
-}
-else {
+} else {
     dataTable = myJSON.parse(dataTable);
 }
 
@@ -105,74 +105,86 @@ else {
  * 設定on/off処理関数
  */
 function onSettingClick(e) {
-    var key = this.getAttribute("type");
+    var key = this.getAttribute('type');
     dataTable[key].isVisible = !dataTable[key].isVisible;
     GM_setValue('b3MapStar_dataTable',myJSON.stringify(dataTable));
 
-    var clsName = "mapStar_off";
-    var displayVal = "none";
+    var clsName = 'mapStar_off';
+    var displayVal = 'none';
 
     if (dataTable[key].isVisible) {
-        clsName = "mapStar_on";
-        displayVal = "block";
+        clsName = 'mapStar_on';
+        displayVal = 'block';
     }
 
-    $x('id("mapStarItemWrapper")//div[contains(@class,"mapStar_' + key + '_")]').forEach(function(self){
+    $x('id("mapStarItemWrapper")//div[contains(@class,"mapStar_' + key + '_")]')
+        .forEach(function(self) {
         self.style.display = displayVal;
     });
 
-    this.className = "mapStar_outer " + clsName;
+    this.className = 'mapStar_' + key + '_ mapStar_outer ' + clsName;
 }
 
 /**
  * 設定ボックスの挿入
  */
-var settingBox = document.createElement("div");
-settingBox.style.backgroundColor = "#FFFFFF";
+var settingBox = createElement('div',{
+                                        css : {
+                                            'background-color' : '#FFFFFF',
+                                            'padding-left' : '5px'
+                                        }
+                                    });
+
 mapStarBox.appendChild(settingBox);
 
 var css = [
-           ".mapStar_outer{ width:10px;height:10px;margin:2px 4px 2px 0px;float:left;border:1px solid #000000;cursor:pointer; }",
-           ".mapStar_on{ filter:alpha(opacity=100);opacity:1; }",
-           ".mapStar_off{ filter:alpha(opacity=30);opacity:0.3;border:1px solid #999999; }",
-           ".mapStar_box{ filter:alpha(opacity=60);opacity:0.6; position: absolute; width: 8px; height: 8px; padding: 0px 0px 2px 3px; font-size: 8px;}",
-           ".mapStar_box_sol { border:1px solid #000;}",
-           ".mapStar_box_bol { font-weight:bold; }",
+        '.mapStar_outer{ width:10px;height:10px;margin:2px 4px 2px 0px;float:left;border:1px solid #000000;cursor:pointer; }',
+        '.mapStar_on{ filter:alpha(opacity=100);opacity:1; }',
+        '.mapStar_off{ filter:alpha(opacity=30);opacity:0.3;border:1px solid #999999; }',
+        '.mapStar_box{ filter:alpha(opacity=60);opacity:0.6; position: absolute; width: 8px; height: 8px; font-size: 8px;}',
+        '.mapStar_box_sol { border:1px solid #000;padding : 0px 2px 3px 2px;}',
+        '.mapStar_box_bol { font-weight:bold; }',
+        '.mapStar_padding { padding : 1px 2px 4px 3px; }',
        ];
 
 for ( var key in dataTable) {
     var setting = dataTable[key];
-    var onoff = setting.isVisible ? "mapStar_on" : "mapStar_off";
+    var onoff = setting.isVisible ? 'mapStar_on' : 'mapStar_off';
     var setItem = document.createElement('div');
-        setItem.className = "mapStar_outer " + onoff;
+        setItem.className = 'mapStar_' + key + '_ mapStar_outer ' + onoff;
         setItem.style.backgroundColor = setting.bgColor;
 
         setItem.title = setting.title;
 
         settingBox.appendChild(setItem);
-        setItem.setAttribute("type", key);
+        setItem.setAttribute('type', key);
 
-        $e(setItem,{click : onSettingClick});
+    $e(setItem, {
+        click : onSettingClick
+    });
 
-        css.push(".mapStar_"+key+"_ {background-color:"+setting.bgColor+"; color:"+getFontColor(setting.bgColor)+"} ");
+    css.push('.mapStar_' + key + '_ {background-color:' + setting.bgColor
+            + '; color:' + getFontColor(setting.bgColor) + '} ');
+
 }
 
 /**
  * MAPサイズ取得
  */
-var mapSize = ($('rollover').style.zIndex || document.defaultView.getComputedStyle($('rollover'), '').zIndex) - 1;
-
+var mapSize = ($('rollover').style.zIndex || document.defaultView
+        .getComputedStyle($('rollover'), '').zIndex) - 1;
 
 /**
  * CSS設定
  */
-var marginSize = "32px 0px 0px 23px";
+var marginSize = '34px 0px 0px 23px';
 if (400 <= mapSize) {
-    marginSize = "16px 0px 0px 12px";
+    marginSize = '18px 0px 0px 12px';
 } else if (200 <= mapSize) {
-    marginSize = "25px 0px 0px 17px";
+    marginSize = '25px 0px 0px 17px';
 }
-css.push(".mapStar_margin{ margin:"+marginSize+"; z-index:"+(mapSize+2)+"; }");
+css.push('.mapStar_margin{ margin:' + marginSize + '; z-index:' + (mapSize + 2)
+        + '; }');
 GM_addStyle(css.join("\n"));
 
 
@@ -180,24 +192,24 @@ GM_addStyle(css.join("\n"));
  * 地図データの取得
  */
 var mapMap = new Array(mapSize+1);
-var maps = $("mapsAll");
+var maps = $('mapsAll');
 
 for (var i = 0;i <= mapSize;i++) {
     mapMap[i] = null;
 }
 
 var imgRegCmp = new RegExp(/img\/panel\/([^_]*)_([^_]*)_/);
-$x('id("mapsAll")//img[contains(@class,"mapAll") and not(@class="mapAllOverlay")]').forEach(function(self){
+$x('id("mapsAll")//img[contains(@class,"mapAll") and not(@class="mapAllOverlay")]')
+        .forEach(function(self) {
     var matches =self.className.match(/mapAll(\d+)/);
     var mapIndex = matches[1] - 0;
     if ((matches = imgRegCmp.exec(self.src))) {
         if (matches[1] == 'resource') {
             mapMap[mapIndex] = null;
-        }
-        else {
+                } else {
             mapMap[mapIndex] = matches[2];
         }
-    } else if (0 <= self.src.indexOf("blanc")) {
+    } else if (0 <= self.src.indexOf('blanc')) {
         mapMap[mapIndex] = false;
     }
 });
@@ -206,14 +218,17 @@ $x('id("mapsAll")//img[contains(@class,"mapAll") and not(@class="mapAllOverlay")
  * 地図へ埋め込み
  *
  */
-var itemWrapper = document.createElement("div");
-itemWrapper.setAttribute("id","mapStarItemWrapper");
+var itemWrapper = document.createElement('div');
+itemWrapper.setAttribute('id', 'mapStarItemWrapper');
 mapStarBox.appendChild(itemWrapper);
 
-itemWrapper.style.position = "absolute";
+itemWrapper.style.position = 'absolute';
 setTimeout(function() {
-        itemWrapper.style.top = (maps.offsetParent.offsetTop + maps.offsetTop) + "px";
-        itemWrapper.style.left = (maps.offsetParent.offsetLeft + maps.offsetLeft) + "px";
+    itemWrapper.style.top = (maps.offsetParent.offsetTop + maps.offsetTop)+ 'px';
+    itemWrapper.style.left = (maps.offsetParent.offsetLeft + maps.offsetLeft)+ 'px';
+
+    var f = arguments.callee;
+    setTimeout(function() { f();},1000);
 },300);
 
 
@@ -236,17 +251,17 @@ for (var i = 1,j=0; i < mapMap.length; i++) {
     var matches = null;
 
     if ((matches = regCmp.exec(mo))) {
-        var dataKey = (mapMap[i] === null) ? "w" : mapMap[i];
+        var dataKey = (mapMap[i] === null) ? 'w' : mapMap[i];
         setting  = dataTable[dataKey];
 
         var item = document.createElement('div');
 
         if (setting.isVisible == false) {
-            item.style.display = "none";
+            item.style.display = 'none';
         }
 
-        item.className = "mapStar_margin mapStar_box mapStar_" + dataKey + "_";
-        item.setAttribute("id","mapStar_"+i);
+        item.className = 'mapStar_margin mapStar_box mapStar_' + dataKey + '_';
+        item.setAttribute('id', 'mapStar_' + i);
         item.style.left = matches[3];
         item.style.top = matches[4];
         item.innerHTML = matches[2].length;
@@ -254,11 +269,14 @@ for (var i = 1,j=0; i < mapMap.length; i++) {
         if (matches[2].length < setting.low) {
             continue;
         }
+        if (matches[2].length < setting.middle) {
+            item.className += ' mapStar_padding';
+        }
         if (setting.middle <= matches[2].length) {
-            item.className += " mapStar_box_sol";
+            item.className += ' mapStar_box_sol';
         }
         if (setting.high <= matches[2].length) {
-            item.className += " mapStar_box_bol";
+            item.className += ' mapStar_box_bol';
         }
 
         itemWrapper.appendChild(item);
@@ -269,7 +287,7 @@ for (var i = 1,j=0; i < mapMap.length; i++) {
 
 
 function getFontColor(colStr) {
-    if (colStr[0] == "#") {
+    if (colStr[0] == '#') {
         colStr = colStr.substring(1);
     }
     var r = parseInt(colStr[0], 16);
@@ -291,19 +309,19 @@ function getFontColor(colStr) {
     var bLightness = getLightness(0, 0, 0);
     var wLightness = getLightness(255, 255, 255);
 
-    var fontColer = "FFF";
-    if (Math.abs(wLightness - bgLightness) < Math.abs(bLightness
-            - bgLightness)) {
-        fontColer = "000";
+    var fontColer = 'FFF';
+    if (Math.abs(wLightness - bgLightness) < Math.abs(bLightness - bgLightness)) {
+        fontColer = '000';
     }
 
-    return "#"+fontColer;
+    return '#' + fontColer;
 }
 
 function initGMFunctions() {
     //@copyright      2009, James Campos
     //@license        cc-by-3.0; http://creativecommons.org/licenses/by/3.0/
-    if ((typeof GM_getValue != 'undefined') && (GM_getValue('a', 'b') != undefined)) {
+    if ((typeof GM_getValue != 'undefined')
+            && (GM_getValue('a', 'b') != undefined)) {
         return;
     }
     GM_addStyle = function(css) {
@@ -376,7 +394,11 @@ function initGMFunctions() {
 }
 
 function initJSON() {
-    var myJSON = function(){if (typeof JSON == 'object') {this.__proto__ = JSON;}};
+    var myJSON = function() {
+        if (typeof JSON == 'object') {
+            this.__proto__ = JSON;
+        }
+    };
     if (typeof JSON != 'object' || typeof Prototype == 'object') {
         myJSON.prototype.stringify = function(obj) {
             switch (typeof obj) {
@@ -398,7 +420,8 @@ function initJSON() {
                             + complementZero(obj.getUTCDate()) + 'T'
                             + complementZero(obj.getUTCHours()) + ':'
                             + complementZero(obj.getUTCMinutes()) + ':'
-                            + complementZero(obj.getUTCSeconds()) + 'Z' : 'null';
+                            + complementZero(obj.getUTCSeconds()) + 'Z'
+                            : 'null';
                 }
 
                 var partial = new Array();
@@ -440,8 +463,7 @@ function initJSON() {
                 };
 
                 return escapable.test(str) ? '"'
-                        + str.replace(escapable,
-                                function(a) {
+                        + str.replace(escapable, function(a) {
                                     var c = meta[a];
                                     return typeof c === 'string' ? c : '\\u'
                                             + ('0000' + a.charCodeAt(0).toString(16))
@@ -456,10 +478,43 @@ function initJSON() {
 
         if (typeof JSON != 'object') {
             myJSON.prototype.parse = function(jsonStrings) {
-                return eval("(" + jsonStrings + ")");
+                return eval('(' + jsonStrings + ')');
             };
         }
     }
 
     return new myJSON();
+}
+
+function createText(text) {
+    return document.createTextNode(text);
+}
+
+function createElement(elementName, option, doc) {
+    var pageDocument = doc ? doc : document;
+    var retElement = elementName == 'img' ? new Image() : pageDocument
+            .createElement(elementName);
+
+    if (typeof option == 'object') {
+        if (typeof option.attribute == 'object') {
+            for ( var attrName in option.attribute) {
+                retElement.setAttribute(attrName, option.attribute[attrName]);
+            }
+        }
+        if (typeof option.events == 'object') {
+            $e(retElement, option.events);
+        }
+        if (typeof option.innerText == 'string') {
+            retElement.appendChild(pageDocument.createTextNode(option.innerText));
+        }
+        if (typeof option.css == 'object') {
+            var cssString = '';
+            for ( var cssProp in option.css) {
+                retElement.style.setProperty(cssProp, option.css[cssProp]);
+            }
+        } else if (option.css == 'string') {
+            retElement.style.cssText = option.css;
+        }
+    }
+    return retElement;
 }
