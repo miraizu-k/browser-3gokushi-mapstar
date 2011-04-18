@@ -3,6 +3,7 @@
 // @namespace      3gokushi
 // @description    ブラウザ三国志のマップに★の数を表示します。
 // @include        http://*.3gokushi.jp/map.php*
+// @include        https://*.3gokushi.jp/map.php*
 // @version        1.2.0
 // ==/UserScript==
 (function() {
