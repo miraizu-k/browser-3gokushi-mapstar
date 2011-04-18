@@ -3,6 +3,7 @@
 // @namespace      3gokushi
 // @description    ブラウザ三国志のマップに★の数を表示します。
 // @include        http://*.3gokushi.jp/map.php*
+// @include        https://*.3gokushi.jp/map.php*
 // @version        1.2.0
 // ==/UserScript==
 initGMFunctions();
@@ -445,8 +446,9 @@ mapStarBox.appendChild(itemWrapper);
 
 itemWrapper.style.position = 'absolute';
 setTimeout(function() {
-    itemWrapper.style.top = (maps.offsetParent.offsetTop + maps.offsetTop)+ 'px';
-    itemWrapper.style.left = (maps.offsetParent.offsetLeft + maps.offsetLeft)+ 'px';
+    var parent = maps.offsetParent || maps.parentNode;
+    itemWrapper.style.top = (parent.offsetTop + maps.offsetTop)+ 'px';
+    itemWrapper.style.left = (parent.offsetLeft + maps.offsetLeft)+ 'px';
 
     var f = arguments.callee;
     setTimeout(function() { f();},1000);
