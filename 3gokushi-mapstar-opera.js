@@ -6,12 +6,11 @@
 // @version        1.1.3.4
 // ==/UserScript==
 document.addEventListener('DOMContentLoaded', function() {
-    initGMFunctions();
+    var crossBrowserUtility = initCrossBrowserSupport();
     var $x = function (xpath, context){var nodes = [];try {var doc = context || document;var results = doc.evaluate(xpath, doc, null, XPathResult.ANY_TYPE, null);var node;while (node = results.iterateNext()) {nodes.push(node);}} catch (e) {throw new Error(e.message);}return nodes;};
     var $ = function (id,pd) {return pd ? pd.getElementById(id) : document.getElementById(id);};
     var $e = function(doc, event, func, useCapture) {var eventList = event;var eType = null;var capture = useCapture || false;if (typeof event == 'string') {eventList = new Object();eventList[event] = new Array(func);} else {for (eType in eventList) {if (typeof eventList[eType] == 'object'&& eventList[eType] instanceof Array) {continue;}eventList[eType] = [ event[eType] ];}}for (eType in eventList) {var eventName = eType;for ( var i = 0; i < eventList[eType].length; i++) {doc.addEventListener(eventName, eventList[eType][i], capture);}}};
 
-    var myJSON = initJSON();
 
     var mapStarBox = createElement('div', {'attribute' : {'id' : 'mapStarBox'}});
     $x('id("mapboxInner")').forEach(function(self) {
@@ -99,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
     } else {
-        dataTable = myJSON.parse(dataTable);
+        dataTable = crossBrowserUtility.JSON.parse(dataTable);
     }
 
     /**
@@ -108,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function onSettingClick(e) {
         var key = this.getAttribute('type');
         dataTable[key].isVisible = !dataTable[key].isVisible;
-        GM_setValue('b3MapStar_dataTable',myJSON.stringify(dataTable));
+        GM_setValue('b3MapStar_dataTable',crossBrowserUtility.JSON.stringify(dataTable));
 
         var clsName = 'mapStar_off';
         var displayVal = 'none';
@@ -319,175 +318,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return '#' + fontColer;
     }
 
-    function initGMFunctions() {
-        //@copyright      2009, James Campos
-        //@license        cc-by-3.0; http://creativecommons.org/licenses/by/3.0/
-        if ((typeof GM_getValue != 'undefined')
-                && (GM_getValue('a', 'b') != undefined)) {
-            return;
-        }
-        GM_addStyle = function(css) {
-            var style = document.createElement('style');
-            style.textContent = css;
-            document.getElementsByTagName('head')[0].appendChild(style);
-        };
-
-        GM_deleteValue = function(name) {
-            localStorage.removeItem(name);
-        };
-
-        GM_getValue = function(name, defaultValue) {
-            var value = localStorage.getItem(name);
-            if (!value)
-                return defaultValue;
-            var type = value[0];
-            value = value.substring(1);
-            switch (type) {
-                case 'b':
-                    return value == 'true';
-                case 'n':
-                    return Number(value);
-                default:
-                    return value;
-            }
-        };
-
-        GM_log = function(message) {
-            if (typeof opera == 'object') {
-                opera.postError(message);
-                return;
-            }
-            console.log(message);
-        };
-
-        GM_registerMenuCommand = function(name, funk) {
-            //todo
-        };
-
-        GM_setValue = function(name, value) {
-             switch (typeof value) {
-                case 'string':
-                case 'number':
-                case 'boolean':
-                    break;
-                default:
-                    throw new TypeError();
-            }
-
-            value = (typeof value)[0] + value;
-            localStorage.setItem(name, value);
-        };
-
-        // additional functions
-        GM_listValues = function() {
-            var len = localStorage.length;
-            var res = new Object();
-            var key = '';
-            for (var i = 0;i < len;i++) {
-                key = localStorage.key(i);
-                res[key] = key;
-            }
-            return res;
-        };
-
-        GM_openInTab = function (url) {
-            window.open(url,'');
-        };
-    }
-
-    function initJSON() {
-        var myJSON = function() {
-            if (typeof JSON == 'object') {
-                this.__proto__ = JSON;
-            }
-        };
-        if (typeof JSON != 'object' || typeof Prototype == 'object') {
-            myJSON.prototype.stringify = function(obj) {
-                switch (typeof obj) {
-                case 'string':
-                    return quote(obj);
-                case 'number':
-                    return isFinite(obj) ? String(obj) : 'null';
-                case 'boolean':
-                case 'null':
-                    return String(obj);
-                case 'object':
-                    if (!obj) {
-                        return 'null';
-                    }
-
-                    if (obj instanceof Date) {
-                        return isFinite(obj) ? obj.getUTCFullYear() + '-'
-                                + complementZero(obj.getUTCMonth() + 1) + '-'
-                                + complementZero(obj.getUTCDate()) + 'T'
-                                + complementZero(obj.getUTCHours()) + ':'
-                                + complementZero(obj.getUTCMinutes()) + ':'
-                                + complementZero(obj.getUTCSeconds()) + 'Z'
-                                : 'null';
-                    }
-
-                    var partial = new Array();
-                    var prefix = '{';
-                    var suffix = '}';
-                    if (obj instanceof Array) {
-                        prefix = '[';
-                        suffix = ']';
-
-                        length = obj.length;
-                        for ( var i = 0; i < length; i++) {
-                            partial[i] = arguments.callee(obj[i]) || 'null';
-                        }
-                    } else {
-                        for ( var key in obj) {
-                            if (Object.hasOwnProperty.call(obj, key)) {
-                                partial.push(quote(key) + ':'
-                                        + (arguments.callee(obj[key]) || 'null'));
-                            }
-                        }
-                    }
-
-                    return prefix + partial.join(',') + suffix;
-                    break;
-                default:
-                    return null;
-                }
-
-                function quote(str) {
-                    var escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
-                    var meta = { // table of character substitutions
-                        '\b' : '\\b',
-                        '\t' : '\\t',
-                        '\n' : '\\n',
-                        '\f' : '\\f',
-                        '\r' : '\\r',
-                        '"' : '\\"',
-                        '\\' : '\\\\'
-                    };
-
-                    return escapable.test(str) ? '"'
-                            + str.replace(escapable, function(a) {
-                                        var c = meta[a];
-                                        return typeof c === 'string' ? c : '\\u'
-                                                + ('0000' + a.charCodeAt(0).toString(16))
-                                                        .slice(-4);
-                                    }) + '"' : '"' + str + '"';
-                }
-
-                function complementZero(number) {
-                    return number < 10 ? '0' + number : number;
-                }
-            };
-
-            if (typeof JSON != 'object') {
-                myJSON.prototype.parse = function(jsonStrings) {
-                    return eval('(' + jsonStrings + ')');
-                };
-            }
-        }
-
-        return new myJSON();
-    }
-
     function createText(text) {
         return document.createTextNode(text);
     }
@@ -519,5 +349,223 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         return retElement;
+    }
+
+    //GM関数初期化
+    function initGMFunctions() {
+        // @copyright 2009, James Campos
+        // @license cc-by-3.0; http://creativecommons.org/licenses/by/3.0/
+        if ((typeof GM_getValue != 'undefined')
+                && (GM_getValue('a', 'b') != undefined)) {
+            return;
+        }
+        GM_addStyle = function(css) {
+            var style = document.createElement('style');
+            style.textContent = css;
+            document.getElementsByTagName('head')[0].appendChild(style);
+        };
+
+        GM_deleteValue = function(name) {
+            localStorage.removeItem(name);
+        };
+
+        GM_getValue = function(name, defaultValue) {
+            var value = localStorage.getItem(name);
+            if (!value)
+                return defaultValue;
+            var type = value[0];
+            value = value.substring(1);
+            switch (type) {
+            case 'b':
+                return value == 'true';
+            case 'n':
+                return Number(value);
+            default:
+                return value;
+            }
+        };
+
+        GM_log = function(message) {
+            if (typeof opera == 'object') {
+                opera.postError(message);
+                return;
+            }
+            console.log(message);
+        };
+
+        GM_registerMenuCommand = function(name, funk) {
+            // todo
+        };
+
+        GM_setValue = function(name, value) {
+            switch (typeof value) {
+            case 'string':
+            case 'number':
+            case 'boolean':
+                break;
+            default:
+                throw new TypeError();
+            }
+
+            value = (typeof value)[0] + value;
+            localStorage.setItem(name, value);
+        };
+
+        // additional functions
+        GM_listValues = function() {
+            var len = localStorage.length;
+            var res = new Object();
+            var key = '';
+            for ( var i = 0; i < len; i++) {
+                key = localStorage.key(i);
+                res[key] = key;
+            }
+            return res;
+        };
+
+        GM_openInTab = function(url) {
+            window.open(url, '');
+        };
+    }
+
+    //JSONがない場合とprototype.jsとJSONオブジェクトの衝突回避用(forOpera)
+    function initJSON() {
+        var myJSON = function() {
+            if (typeof JSON != 'object' || typeof Prototype == 'object') {
+                this.__proto__ = {
+                    stringify : function(obj) {
+                        switch (typeof obj) {
+                        case 'string':
+                            return quote(obj);
+                        case 'number':
+                            return isFinite(obj) ? String(obj) : 'null';
+                        case 'boolean':
+                        case 'null':
+                            return String(obj);
+                        case 'object':
+                            if (!obj) {
+                                return 'null';
+                            }
+
+                            if (obj instanceof Date) {
+                                return isFinite(obj) ? obj.getUTCFullYear() + '-'
+                                        + complementZero(obj.getUTCMonth() + 1) + '-'
+                                        + complementZero(obj.getUTCDate()) + 'T'
+                                        + complementZero(obj.getUTCHours()) + ':'
+                                        + complementZero(obj.getUTCMinutes()) + ':'
+                                        + complementZero(obj.getUTCSeconds()) + 'Z'
+                                        : 'null';
+                            }
+
+                            var partial = new Array();
+                            var prefix = '{';
+                            var suffix = '}';
+                            if (obj instanceof Array) {
+                                prefix = '[';
+                                suffix = ']';
+
+                                length = obj.length;
+                                for ( var i = 0; i < length; i++) {
+                                    partial[i] = arguments.callee(obj[i]) || 'null';
+                                }
+                            } else {
+                                for ( var key in obj) {
+                                    if (Object.hasOwnProperty.call(obj, key)) {
+                                        partial.push(quote(key) + ':'
+                                                + (arguments.callee(obj[key]) || 'null'));
+                                    }
+                                }
+                            }
+
+                            return prefix + partial.join(',') + suffix;
+                            break;
+                        default:
+                            return null;
+                        }
+
+                        function quote(str) {
+                            var escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
+                            var meta = { // table of character substitutions
+                                '\b' : '\\b',
+                                '\t' : '\\t',
+                                '\n' : '\\n',
+                                '\f' : '\\f',
+                                '\r' : '\\r',
+                                '"' : '\\"',
+                                '\\' : '\\\\'
+                            };
+
+                            return escapable.test(str) ? '"'
+                                    + str.replace(escapable, function(a) {
+                                                var c = meta[a];
+                                                return typeof c === 'string' ? c : '\\u'
+                                                        + ('0000' + a.charCodeAt(0).toString(16))
+                                                                .slice(-4);
+                                            }) + '"' : '"' + str + '"';
+                        }
+
+                        function complementZero(number) {
+                            return number < 10 ? '0' + number : number;
+                        }
+                    },
+                    parse : function(jsonStrings) {
+                        return eval('(' + jsonStrings + ')');
+                    }
+                };
+            }
+        };
+
+        myJSON.prototype = JSON;
+
+        return new myJSON();
+    }
+
+    function initCrossBrowserSupport() {
+        var crossBrowserUtility = {'JSON':null}
+        // GM関数の初期化
+        initGMFunctions();
+
+        // 配列のindexOf対策 from MDC
+        if (!Array.prototype.indexOf) {
+            Array.prototype.indexOf = function(elt /*, from*/) {
+                var len = this.length;
+
+                var from = Number(arguments[1]) || 0;
+                from = (from < 0) ? Math.ceil(from) : Math.floor(from);
+                if (from < 0) {
+                    from += len;
+                }
+
+                for (; from < len; from++) {
+                    if (from in this && this[from] === elt) {
+                        return from;
+                    }
+                }
+
+                return -1;
+            };
+        }
+
+        // ArrayのforEach対策 from MDC
+        if (!Array.prototype.forEach)
+        {
+            Array.prototype.forEach = function(fun /*, thisp*/)
+            {
+                var len = this.length;
+                if (typeof fun != "function")
+                    throw new TypeError();
+
+                var thisp = arguments[1];
+                for (var i = 0; i < len; i++)
+                {
+                    if (i in this)
+                        fun.call(thisp, this[i], i, this);
+                }
+            };
+        }
+
+        // JSONのサポート
+        crossBrowserUtility.JSON = initJSON();
+        return crossBrowserUtility;
     }
 },false);
