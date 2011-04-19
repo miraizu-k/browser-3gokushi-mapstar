@@ -5,6 +5,7 @@
 // @include        http://*.3gokushi.jp/map.php*
 // @version        1.1.3.4
 // ==/UserScript==
+(function() {
 var crossBrowserUtility = initCrossBrowserSupport();
 var $x = function (xpath, context){var nodes = [];try {var doc = context || document;var results = doc.evaluate(xpath, doc, null, XPathResult.ANY_TYPE, null);var node;while (node = results.iterateNext()) {nodes.push(node);}} catch (e) {throw new Error(e.message);}return nodes;};
 var $ = function (id,pd) {return pd ? pd.getElementById(id) : document.getElementById(id);};
@@ -514,7 +515,9 @@ function initJSON() {
         }
     };
 
-    myJSON.prototype = JSON;
+    if (typeof JSON == 'object') {
+        myJSON.prototype = JSON;
+    }
 
     return new myJSON();
 }
@@ -566,3 +569,4 @@ function initCrossBrowserSupport() {
     crossBrowserUtility.JSON = initJSON();
     return crossBrowserUtility;
 }
+})();
