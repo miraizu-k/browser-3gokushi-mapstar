@@ -3,7 +3,8 @@
 // @namespace      3gokushi
 // @description    ブラウザ三国志のマップに★の数を表示します。
 // @include        http://*.3gokushi.jp/map.php*
-// @version        1.1.3.4
+// @include        https://*.3gokushi.jp/map.php*
+// @version        1.2.0.0
 // ==/UserScript==
 document.addEventListener('DOMContentLoaded', function() {
     var crossBrowserUtility = initCrossBrowserSupport();
@@ -22,79 +23,79 @@ document.addEventListener('DOMContentLoaded', function() {
      */
 
     var dataTable;
-    if ((dataTable = GM_getValue('b3MapStar_dataTable',null)) == null) {
+    if ((dataTable = GM_getValue('b3MapStar_dataTable', null)) == null) {
         dataTable = {
             w : { // white
                 bgColor : '#FFFFFF',
-                isVisible: true,
+                isVisible : true,
                 title : '空地',
-                low:1,
-                middle:3,
-                high:5
+                low : 1,
+                middle : 3,
+                high : 5
             },
-            b : {   // blue
+            b : { // blue
                 bgColor : '#0000FF',
-                isVisible: true,
+                isVisible : true,
                 title : '自軍',
-                low:1,
-                middle:3,
-                high:5
+                low : 1,
+                middle : 3,
+                high : 5
             },
             g : { // green
                 bgColor : '#00FF00',
-                isVisible: true,
+                isVisible : true,
                 title : '同盟員',
-                low:1,
-                middle:3,
-                high:5
+                low : 1,
+                middle : 3,
+                high : 5
             },
             bk : { // black
                 bgColor : '#000000',
-                isVisible: true,
+                isVisible : true,
                 title : '自配下',
-                low:1,
-                middle:3,
-                high:5
+                low : 1,
+                middle : 3,
+                high : 5
             },
             bg : { // sky blue
                 bgColor : '#0066FF',
-                isVisible: true,
+                isVisible : true,
                 title : '親同盟',
-                low:1,
-                middle:3,
-                high:5
+                low : 1,
+                middle : 3,
+                high : 5
             },
             y : { // yellow
                 bgColor : '#FFFF00',
-                isVisible: true,
+                isVisible : true,
                 title : '不可侵',
-                low:1,
-                middle:3,
-                high:5
+                low : 1,
+                middle : 3,
+                high : 5
             },
             r : { // red
                 bgColor : '#FF0000',
-                isVisible: true,
+                isVisible : true,
                 title : '敵対',
-                low:1,
-                middle:3,
-                high:5
+                low : 1,
+                middle : 3,
+                high : 5
             },
             o : { // orange
                 bgColor : '#FFA500',
-                isVisible: true,
+                isVisible : true,
                 title : '他配下',
-                low:1,
-                middle:3,
-                high:5
+                low : 1,
+                middle : 3,
+                high : 5
             },
             p : { // purple
                 bgColor : '#FF00FF',
-                isVisible: true,
+                isVisible : true,
                 title : 'NPC',
-                low:1,
-                middle:3,
-                high:5
+                low : 1,
+                middle : 3,
+                high : 5
             }
         };
     } else {
@@ -107,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function onSettingClick(e) {
         var key = this.getAttribute('type');
         dataTable[key].isVisible = !dataTable[key].isVisible;
-        GM_setValue('b3MapStar_dataTable',crossBrowserUtility.JSON.stringify(dataTable));
+        GM_setValue('b3MapStar_dataTable', crossBrowserUtility.JSON.stringify(dataTable));
 
         var clsName = 'mapStar_off';
         var displayVal = 'none';
@@ -119,11 +120,213 @@ document.addEventListener('DOMContentLoaded', function() {
 
         $x('id("mapStarItemWrapper")//div[contains(@class,"mapStar_' + key + '_")]')
             .forEach(function(self) {
-            self.style.display = displayVal;
-        });
+                self.style.display = displayVal;
+            });
 
         this.className = 'mapStar_' + key + '_ mapStar_outer ' + clsName;
     }
+
+    /**
+     * 設定エディタ
+     */
+
+    GM_addStyle([
+            '.mapStar_editor {',
+                'border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;',
+                'background-color: white; position:absolute; padding:5px; z-index: 500;',
+                'vertical',
+            '}',
+            '.mapStar_editor li{',
+                'margin:3px;',
+            '}',
+            '.mapStar_editor li div{',
+                'position:static;',
+                'margin-left:10px;',
+                'float:left;',
+                'width:10px;height:10px;' ,
+                'font-size: 8px;',
+            '}',
+            ].join("\n"));
+
+    var editorBox = createElement('div', {
+        attribute : {
+            'class' : 'mapStar_editor'
+        },
+        css : {
+            display : 'none'
+        }
+    });
+    var ul = createElement('ul');
+    var li = createElement('li');
+    var label = createElement('label');
+
+    var editorCache = { caption : null,bgColor:null,lowLevelText:null,middleLevelText:null,highLevelText:null,lowLevel:null,middleLevel:null,highLevel:null};
+
+    // 色選択する所
+    var colorSelect = li.cloneNode(true);
+    var colorSelectLabel = label.cloneNode(true);
+    colorSelectLabel.appendChild(createText('変更する色選択\u00A0：\u00A0'));
+    var colorSelectSelectNode = createElement('select',{
+                                                            events : {
+                                                                change : function(e) {
+                                                                    var dataKey = e.target.value;
+                                                                    var setting = dataTable[dataKey];
+                                                                    editorCache.caption.value = setting.title;
+                                                                    editorCache.bgColor.value = setting.bgColor.substring(1);
+
+                                                                    editorCache.lowLevelText.innerHTML = setting.low;
+                                                                    editorCache.lowLevelText.className = 'mapStar_on mapStar_' + dataKey + '_ mapStar_padding';
+                                                                    editorCache.middleLevelText.innerHTML = setting.middle;
+                                                                    editorCache.middleLevelText.className = 'mapStar_on mapStar_' + dataKey + '_ mapStar_box_sol';
+                                                                    editorCache.highLevelText.innerHTML = setting.high;
+                                                                    editorCache.highLevelText.className = 'mapStar_on mapStar_' + dataKey + '_ mapStar_box_sol mapStar_box_bol';
+                                                                    editorCache.lowLevel.value = setting.low;
+                                                                    editorCache.middleLevel.value = setting.middle;
+                                                                    editorCache.highLevel.value = setting.high;
+                                                                }
+                                                            }
+                                                        });
+    colorSelectLabel.appendChild(colorSelectSelectNode);
+    colorSelect.appendChild(colorSelectLabel);
+    ul.appendChild(colorSelect);
+
+    // 簡易説明の所
+    var caption = li.cloneNode(true);
+    var captionLabel = label.cloneNode(true);
+    captionLabel.appendChild(createText('簡易説明\u00A0：\u00A0'));
+    editorCache.caption = createElement('input', {
+                                attribute : {
+                                    'type' : 'text',
+                                    'maxlength' : '10',
+                                    'size' : '11',
+                                    'name' : 'title'
+                                }
+                            });
+    captionLabel.appendChild(editorCache.caption);
+    caption.appendChild(captionLabel);
+    ul.appendChild(caption);
+
+    // 背景色の所
+    var bgColor = li.cloneNode(true);
+    var bgColorLabel = label.cloneNode(true);
+    bgColorLabel.style.setProperty('float','left');
+    bgColorLabel.appendChild(createText('背景色\u00A0：\u00A0#'));
+    editorCache.bgColor = createElement('input', {
+                                attribute : {
+                                    'type' : 'text',
+                                    'maxlength' : '6',
+                                    'size' : '7',
+                                    'name' : 'bgColor'
+                                }
+                            });
+    bgColorLabel.appendChild(editorCache.bgColor);
+    bgColor.appendChild(bgColorLabel);
+    ul.appendChild(bgColor);
+
+    // レベル関係の所
+    var levelDatas = {
+                        low:{
+                            caption:'最低Lv\u00A0：\u00A0'
+                        },
+                        middle:{
+                            caption:'中Lv\u00A0：\u00A0'
+                        },
+                        high:{
+                            caption:'高Lv\u00A0：\u00A0'
+                        }
+                    };
+    for (var level in levelDatas)(function(level,levelData){
+        var levelLi = li.cloneNode(true);
+        levelLi.style.setProperty('float','left');
+        if (level == 'low') {
+            levelLi.style.setProperty('clear','both');
+        }
+        var levelLabel = label.cloneNode(true);
+        levelLabel.appendChild(createText(levelData.caption));
+        editorCache[level+'Level'] = createElement('input', {
+                                            attribute : {
+                                                'type' : 'text',
+                                                'maxlength' : '1',
+                                                'size' : '1',
+                                                'name' : 'low'
+                                            }
+                                        });
+        levelLabel.appendChild(editorCache[level+'Level']);
+        levelLi.appendChild(levelLabel);
+        ul.appendChild(levelLi);
+
+        editorCache[level+'LevelText'] = createElement('div', {attribute : {'class' : levelData.className}});
+        bgColor.appendChild(editorCache[level+'LevelText']);
+    })(level,levelDatas[level]);
+
+    // 各種ボタン
+    var buttons = li.cloneNode(true);
+    buttons.style.setProperty('clear','both');
+    buttons.style.setProperty('padding-top','3px');
+    buttons.appendChild(createElement('input',{
+                                        attribute : {
+                                            'type' : 'submit',
+                                            'value' : '保存'
+                                        }
+                                    }));
+    buttons.appendChild(createText('\u00A0'));
+    buttons.appendChild(createElement('input',{
+                                        attribute : {
+                                            'type' : 'button',
+                                            'value' : 'キャンセル'
+                                        },
+                                        events : {
+                                            click : function (e) {
+                                                editorBox.style.display = 'none';
+                                            }
+                                        }
+                                    }));
+    buttons.appendChild(createText('\u00A0'));
+    buttons.appendChild(createElement('input',{
+                                        attribute : {
+                                            'type' : 'button',
+                                            'value' : '削除'
+                                        },
+                                        css : {
+                                            display : 'none'
+                                        },
+                                        events : {
+                                            click : function (e) {
+                                                alert('削除!');
+                                                editorBox.style.display = 'none';
+                                            }
+                                        }
+                                    }));
+    ul.appendChild(buttons);
+
+    var form = createElement('form',{
+                                        events : {
+                                            submit : function(e) {
+                                                alert('ほぞんー');
+                                                editorBox.style.display = 'none';
+                                                e.preventDefault();
+                                            }
+                                        }
+                                    });
+    form.appendChild(ul);
+    editorBox.appendChild(form);
+
+
+    mapStarBox.appendChild(editorBox);
+    var setEditor = function(e) {
+        editorBox.style.display = 'block';
+        editorBox.style.top = e.target.parentNode.offsetTop
+                - editorBox.offsetHeight - 3 + 'px';
+        editorBox.style.left = e.target.parentNode.offsetLeft + 3 + 'px';
+        var key = this.getAttribute('type');
+
+        if (key) {
+            GM_log(key);
+        }
+
+        e.preventDefault();
+        return false;
+    };
 
     /**
      * 設定ボックスの挿入
@@ -145,19 +348,19 @@ document.addEventListener('DOMContentLoaded', function() {
             '.mapStar_box_sol { border:1px solid #000;padding : 0px 2px 3px 2px;}',
             '.mapStar_box_bol { font-weight:bold; }',
             '.mapStar_padding { padding : 1px 2px 4px 3px; }',
-           ];
+            ];
 
     for ( var key in dataTable) {
         var setting = dataTable[key];
         var onoff = setting.isVisible ? 'mapStar_on' : 'mapStar_off';
         var setItem = document.createElement('div');
-            setItem.className = 'mapStar_' + key + '_ mapStar_outer ' + onoff;
-            setItem.style.backgroundColor = setting.bgColor;
+        setItem.className = 'mapStar_' + key + '_ mapStar_outer ' + onoff;
+        setItem.style.backgroundColor = setting.bgColor;
 
-            setItem.title = setting.title;
+        setItem.title = setting.title;
 
-            settingBox.appendChild(setItem);
-            setItem.setAttribute('type', key);
+        settingBox.appendChild(setItem);
+        setItem.setAttribute('type', key);
 
         $e(setItem, {
             click : onSettingClick
@@ -166,7 +369,27 @@ document.addEventListener('DOMContentLoaded', function() {
         css.push('.mapStar_' + key + '_ {background-color:' + setting.bgColor
                 + '; color:' + getFontColor(setting.bgColor) + '} ');
 
+        // editor option
+        colorSelectSelectNode.appendChild(createElement('option',{
+            attribute : {
+                'value' : key,
+                'class' : 'mapStar_' + key + '_'
+            },
+            innerText : setting.title
+        }));
     }
+    // default select dispatch
+    var e = document.createEvent('HTMLEvents');
+    e.initEvent('change', true, true);
+    colorSelectSelectNode.selectedIndex = 0;
+    colorSelectSelectNode.dispatchEvent(e);
+
+    var edit = document.createElement('A');
+    edit.href = 'javascript:void(0);';
+    $e(edit, 'click', setEditor);
+    edit.appendChild(document.createTextNode('編集'));
+    edit.style.color = '#000000';
+    settingBox.appendChild(edit);
 
     /**
      * MAPサイズ取得
@@ -187,32 +410,31 @@ document.addEventListener('DOMContentLoaded', function() {
             + '; }');
     GM_addStyle(css.join("\n"));
 
-
     /**
      * 地図データの取得
      */
-    var mapMap = new Array(mapSize+1);
+    var mapMap = new Array(mapSize + 1);
     var maps = $('mapsAll');
 
-    for (var i = 0;i <= mapSize;i++) {
+    for ( var i = 0; i <= mapSize; i++) {
         mapMap[i] = null;
     }
 
     var imgRegCmp = new RegExp(/img\/panel\/([^_]*)_([^_]*)_/);
     $x('id("mapsAll")//img[contains(@class,"mapAll") and not(@class="mapAllOverlay")]')
             .forEach(function(self) {
-        var matches =self.className.match(/mapAll(\d+)/);
-        var mapIndex = matches[1] - 0;
-        if ((matches = imgRegCmp.exec(self.src))) {
-            if (matches[1] == 'resource') {
-                mapMap[mapIndex] = null;
+                var matches = self.className.match(/mapAll(\d+)/);
+                var mapIndex = matches[1] - 0;
+                if ((matches = imgRegCmp.exec(self.src))) {
+                    if (matches[1] == 'resource') {
+                        mapMap[mapIndex] = null;
                     } else {
-                mapMap[mapIndex] = matches[2];
-            }
-        } else if (0 <= self.src.indexOf('blanc')) {
-            mapMap[mapIndex] = false;
-        }
-    });
+                        mapMap[mapIndex] = matches[2];
+                    }
+                } else if (0 <= self.src.indexOf('blanc')) {
+                    mapMap[mapIndex] = false;
+                }
+            });
 
     /**
      * 地図へ埋め込み
@@ -230,16 +452,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var f = arguments.callee;
         setTimeout(function() { f();},1000);
-    },300);
-
+    }, 300);
 
     var areas = $x('id("mapsAll")//area');
     var areaLen = areas.length;
 
     var regCmp = new RegExp(/(\'[^\']*\'[^\']*){5}\'(\u2605+)\'.*overOperation\(\'.*\'.*\'(.*)\'.*\'(.*)\'/);
 
-
-    for (var i = 1,j=0; i < mapMap.length; i++) {
+    for ( var i = 1, j = 0; i < mapMap.length; i++) {
         if (mapMap[i] === false) {
             continue;
         }
@@ -253,7 +473,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if ((matches = regCmp.exec(mo))) {
             var dataKey = (mapMap[i] === null) ? 'w' : mapMap[i];
-            setting  = dataTable[dataKey];
+            setting = dataTable[dataKey];
 
             var item = document.createElement('div');
 
@@ -284,9 +504,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-
-
-
     function getFontColor(colStr) {
         if (colStr[0] == '#') {
             colStr = colStr.substring(1);
@@ -300,11 +517,9 @@ document.addEventListener('DOMContentLoaded', function() {
             b = parseInt(colStr.substring(4, 6), 16);
         }
 
-
         getLightness = function(r, g, b) {
             return Math.round(((r * 299) + (g * 587) + (b * 114)) / 1000);
         };
-
 
         var bgLightness = getLightness(r, g, b);
         var bLightness = getLightness(0, 0, 0);
@@ -318,10 +533,26 @@ document.addEventListener('DOMContentLoaded', function() {
         return '#' + fontColer;
     }
 
+    /**
+     *
+     * @param {String} text
+     * @returns {Text}
+     */
     function createText(text) {
         return document.createTextNode(text);
     }
 
+    /**
+     * Function createElement
+     *
+     * @param {String}
+     *            elementName
+     * @param {Object}
+     *            option
+     * @param {HTMLDocument}
+     *            doc
+     * @returns {Element}
+     */
     function createElement(elementName, option, doc) {
         var pageDocument = doc ? doc : document;
         var retElement = elementName == 'img' ? new Image() : pageDocument
@@ -342,7 +573,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (typeof option.css == 'object') {
                 var cssString = '';
                 for ( var cssProp in option.css) {
-                    retElement.style.setProperty(cssProp, option.css[cssProp],'');
+                    retElement.style.setProperty(cssProp, option.css[cssProp], '');
                 }
             } else if (option.css == 'string') {
                 retElement.style.cssText = option.css;
@@ -350,6 +581,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return retElement;
     }
+
 
     //GM関数初期化
     function initGMFunctions() {
