@@ -11,7 +11,6 @@ var $x = function (xpath, context){var nodes = [];try {var doc = context || docu
 var $ = function (id,pd) {return pd ? pd.getElementById(id) : document.getElementById(id);};
 var $e = function(doc, event, func, useCapture) {var eventList = event;var eType = null;var capture = useCapture || false;if (typeof event == 'string') {eventList = new Object();eventList[event] = new Array(func);} else {for (eType in eventList) {if (typeof eventList[eType] == 'object'&& eventList[eType] instanceof Array) {continue;}eventList[eType] = [ event[eType] ];}}for (eType in eventList) {var eventName = eType;for ( var i = 0; i < eventList[eType].length; i++) {doc.addEventListener(eventName, eventList[eType][i], capture);}}};
 
-
 var mapStarBox = createElement('div', {'attribute' : {'id' : 'mapStarBox'}});
 $x('id("mapboxInner")').forEach(function(self) {
                                     self.appendChild(mapStarBox);
