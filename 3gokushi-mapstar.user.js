@@ -4,7 +4,7 @@
 // @description    ブラウザ三国志のマップに★の数を表示します。
 // @include        http://*.3gokushi.jp/map.php*
 // @include        https://*.3gokushi.jp/map.php*
-// @version        1.2.0
+// @version        1.2.0.0
 // ==/UserScript==
 (function() {
 var crossBrowserUtility = initCrossBrowserSupport();
@@ -370,11 +370,11 @@ for ( var key in dataTable) {
     css.push('.mapStar_' + key + '_ {background-color:' + setting.bgColor
             + '; color:' + getFontColor(setting.bgColor) + '} ');
 
-
     // editor option
     colorSelectSelectNode.appendChild(createElement('option',{
         attribute : {
-            'value' : key
+            'value' : key,
+            'class' : 'mapStar_' + key + '_'
         },
         innerText : setting.title
     }));
@@ -542,10 +542,26 @@ function getFontColor(colStr) {
     return '#' + fontColer;
 }
 
+/**
+ *
+ * @param {String} text
+ * @returns {Text}
+ */
 function createText(text) {
     return document.createTextNode(text);
 }
 
+/**
+ * Function createElement
+ *
+ * @param {String}
+ *            elementName
+ * @param {Object}
+ *            option
+ * @param {HTMLDocument}
+ *            doc
+ * @returns {Element}
+ */
 function createElement(elementName, option, doc) {
     var pageDocument = doc ? doc : document;
     var retElement = elementName == 'img' ? new Image() : pageDocument
