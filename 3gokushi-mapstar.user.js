@@ -210,7 +210,7 @@ ul.appendChild(caption);
 // 背景色の所
 var bgColor = li.cloneNode(true);
 var bgColorLabel = label.cloneNode(true);
-bgColorLabel.style.setProperty('float','left');
+bgColorLabel.style.setProperty('float','left','');
 bgColorLabel.appendChild(createText('背景色\u00A0：\u00A0#'));
 editorCache.bgColor = createElement('input', {
                             attribute : {
@@ -238,9 +238,9 @@ var levelDatas = {
                 };
 for (var level in levelDatas)(function(level,levelData){
     var levelLi = li.cloneNode(true);
-    levelLi.style.setProperty('float','left');
+    levelLi.style.setProperty('float','left','');
     if (level == 'low') {
-        levelLi.style.setProperty('clear','both');
+        levelLi.style.setProperty('clear','both','');
     }
     var levelLabel = label.cloneNode(true);
     levelLabel.appendChild(createText(levelData.caption));
@@ -262,8 +262,8 @@ for (var level in levelDatas)(function(level,levelData){
 
 // 各種ボタン
 var buttons = li.cloneNode(true);
-buttons.style.setProperty('clear','both');
-buttons.style.setProperty('padding-top','3px');
+buttons.style.setProperty('clear','both','');
+buttons.style.setProperty('padding-top','3px','');
 buttons.appendChild(createElement('input',{
                                     attribute : {
                                         'type' : 'submit',

@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 背景色の所
     var bgColor = li.cloneNode(true);
     var bgColorLabel = label.cloneNode(true);
-    bgColorLabel.style.setProperty('float','left');
+    bgColorLabel.style.setProperty('float','left','');
     bgColorLabel.appendChild(createText('背景色\u00A0：\u00A0#'));
     editorCache.bgColor = createElement('input', {
                                 attribute : {
@@ -238,9 +238,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     };
     for (var level in levelDatas)(function(level,levelData){
         var levelLi = li.cloneNode(true);
-        levelLi.style.setProperty('float','left');
+        levelLi.style.setProperty('float','left','');
         if (level == 'low') {
-            levelLi.style.setProperty('clear','both');
+            levelLi.style.setProperty('clear','both','');
         }
         var levelLabel = label.cloneNode(true);
         levelLabel.appendChild(createText(levelData.caption));
@@ -262,8 +262,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 各種ボタン
     var buttons = li.cloneNode(true);
-    buttons.style.setProperty('clear','both');
-    buttons.style.setProperty('padding-top','3px');
+    buttons.style.setProperty('clear','both','');
+    buttons.style.setProperty('padding-top','3px','');
     buttons.appendChild(createElement('input',{
                                         attribute : {
                                             'type' : 'submit',
@@ -370,11 +370,11 @@ document.addEventListener('DOMContentLoaded', function() {
         css.push('.mapStar_' + key + '_ {background-color:' + setting.bgColor
                 + '; color:' + getFontColor(setting.bgColor) + '} ');
 
-
         // editor option
         colorSelectSelectNode.appendChild(createElement('option',{
             attribute : {
-                'value' : key
+                'value' : key,
+                'class' : 'mapStar_' + key + '_'
             },
             innerText : setting.title
         }));
@@ -542,10 +542,26 @@ document.addEventListener('DOMContentLoaded', function() {
         return '#' + fontColer;
     }
 
+    /**
+     *
+     * @param {String} text
+     * @returns {Text}
+     */
     function createText(text) {
         return document.createTextNode(text);
     }
 
+    /**
+     * Function createElement
+     *
+     * @param {String}
+     *            elementName
+     * @param {Object}
+     *            option
+     * @param {HTMLDocument}
+     *            doc
+     * @returns {Element}
+     */
     function createElement(elementName, option, doc) {
         var pageDocument = doc ? doc : document;
         var retElement = elementName == 'img' ? new Image() : pageDocument
