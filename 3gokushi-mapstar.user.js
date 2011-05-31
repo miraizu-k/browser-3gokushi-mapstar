@@ -480,8 +480,11 @@ colorSelectSelectNode.dispatchEvent(e);
 
 var edit = createElement('A',{
     css : {
-        'text-decoration' : 'underline'
+        'text-decoration' : 'underline',
+        'cursor' : 'pointer',
+        'color' : '#000000'
     },
+    innerText : '編集',
     events : {
         click : function(e) {
             editorBox.style.display = 'block';
@@ -492,8 +495,6 @@ var edit = createElement('A',{
     }
 });
 
-edit.appendChild(document.createTextNode('編集'));
-edit.style.color = '#000000';
 settingBox.appendChild(edit);
 
 /**
@@ -551,14 +552,17 @@ mapStarBox.appendChild(itemWrapper);
 itemWrapper.style.position = 'absolute';
 setTimeout(function() {
     var parent = maps.offsetParent || maps.parentNode;
-    itemWrapper.style.top = (parent.offsetTop + maps.offsetTop) + 'px';
-    itemWrapper.style.left = (parent.offsetLeft + maps.offsetLeft) + 'px';
+    if (parent) {
+        var top = (parent.offsetTop + maps.offsetTop),
+            left = (parent.offsetLeft + maps.offsetLeft);
+        if (top !== parseInt(itemWrapper.style.top,10) || left === parseInt(itemWrapper.style.left,10)) {
+            setTimeout(arguments.callee, 100);
+        }
 
-    var f = arguments.callee;
-    setTimeout(function() {
-        f();
-    }, 1000);
-}, 300);
+        itemWrapper.style.top = (parent.offsetTop + maps.offsetTop) + 'px';
+        itemWrapper.style.left = (parent.offsetLeft + maps.offsetLeft) + 'px';
+    }
+}, 30);
 
 var areas = $x('id("mapsAll")//area');
 var areaLen = areas.length;
