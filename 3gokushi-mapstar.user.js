@@ -9,7 +9,7 @@
 // @include        http://*.sdsam.nexon.com/map.php*
 // @include        http://*.lordsofdynasty.com/map.php*
 // @include        http://*.sangokushi.in.th/map.php*
-// @version        1.3.0.0
+// @version        2.0.0.0
 // ==/UserScript==
 var crossBrowserUtility = initCrossBrowserSupport();
 
